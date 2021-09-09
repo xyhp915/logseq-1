@@ -340,7 +340,7 @@
       (when-not skip-save-current-block?
         (outliner-yjs/save-node-op current-node))
       (outliner-yjs/insert-node-op new-node current-node sibling? {:blocks-atom *blocks
-                                                                 :skip-transact? false})
+                                                                   :skip-transact? false})
       {:blocks @*blocks
        :sibling? sibling?})))
 
@@ -781,27 +781,13 @@
         end-block-parent (get-end-block-parent end-block blocks)]
     (outliner-core/block end-block-parent)))
 
-(defn- reorder-blocks
-  [blocks]
-  (if (<= (count blocks) 1)
-    blocks
-    (let [[f s & others] blocks]
-      (if (or
-           (= (:block/left s) {:db/id (:db/id f)})
-           (let [parents (db/get-block-parents (state/get-current-repo)
-                                               (:block/uuid f)
-                                               100)]
-             (some #(= (:block/left s) {:db/id (:db/id %)})
-                   parents)))
-        blocks
-        (reverse blocks)))))
 
 (defn delete-blocks!
   [repo block-uuids]
   (when (seq block-uuids)
     (let [lookup-refs (map (fn [id] [:block/uuid id]) block-uuids)
           blocks (db/pull-many repo '[*] lookup-refs)
-          blocks (reorder-blocks blocks)
+          blocks (common-handler/reorder-blocks blocks)
           start-node (outliner-core/block (first blocks))
           end-node (get-top-level-end-node blocks)]
       (if (= start-node end-node)
@@ -1657,7 +1643,7 @@
                                                     [:block/uuid (medley/uuid id)])) blocks)
                                  (remove nil?))
                 blocks (db/pull-many repo '[*] lookup-refs)
-                blocks (reorder-blocks blocks)
+                blocks (common-handler/reorder-blocks blocks)
                 end-node (get-top-level-end-node blocks)
                 end-node-parent (tree/-get-parent end-node)
                 top-level-nodes (->> (filter #(= (get-in end-node-parent [:data :db/id])
