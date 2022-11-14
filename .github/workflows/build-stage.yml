@@ -18,7 +18,7 @@ jobs:
       - uses: actions/checkout@v2
       
       - name: Hello Test
-        run: mkdir static && touch static/index.html && echo "abc" >> static/index.html
+        run: mkdir static && touch static/index.html && echo "🍄 a mushroom" >> static/index.html
 
 
       - name: Publish to Cloudflare Pages
@@ -29,3 +29,4 @@ jobs:
           projectName: 'logseq-demo'
           directory: 'static'
           gitHubToken: ${{ secrets.GITHUB_TOKEN }}
+          branch: 'production'
