@@ -17,8 +17,27 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       
-      - name: Hello Test
-        run: mkdir static && touch static/index.html && echo "🍄 a mushroom" >> static/index.html
+      - name: Setup Java JDK
+        uses: actions/setup-java@v1.4.3
+        with:
+          java-version: 1.8
+
+      - name: Set up Node
+        uses: actions/setup-node@v2
+        with:
+            node-version: 16
+
+      - name: Install clojure
+        run: |
+          curl -O https://download.clojure.org/install/linux-install-1.10.1.763.sh
+          chmod +x linux-install-1.10.1.763.sh
+          sudo ./linux-install-1.10.1.763.sh
+
+      - name: Fetch yarn deps
+        run: yarn cache clean && yarn install --frozen-lockfile
+
+      - name: Build Released-Web
+        run: yarn gulp:build && clojure -M:cljs release app  --config-merge '{:asset-path "${{env.asset-path}}"}'
 
 
       - name: Publish to Cloudflare Pages
